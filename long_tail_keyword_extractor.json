@@ -1,0 +1,295 @@
+{
+  "name": "Long-Tail Keyword Extractor",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        0
+      ],
+      "id": "db449c05-4b07-4ad6-8272-13a4bbde5d32",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "getPageInsights",
+        "siteUrl": "https://www.drsalehilab.com/",
+        "dateRangeMode": "last12mo",
+        "rowLimit": 10000,
+        "dimensions": [
+          "query"
+        ]
+      },
+      "type": "n8n-nodes-google-search-console.googleSearchConsole",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        -128
+      ],
+      "id": "e6a19379-acaa-4bcd-9a63-9ff961cb1411",
+      "name": "Query search analytics",
+      "credentials": {
+        "googleSearchConsoleOAuth2Api": {
+          "id": "4cWXaE7DzaKHXWSK",
+          "name": "Google Search Console account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fbec6ed4-3549-45b0-b0f7-a40378577ddc",
+              "name": "wordCount",
+              "value": "={{ \n  ($json.query || '')\n    .replace(/\\u200c/g,' ')        // حذف نیم‌فاصله فارسی\n    .replace(/[^\\p{L}\\p{N}]+/gu,' ') // نرمال‌سازی علائم\n    .trim()\n    .split(/\\s+/)\n    .filter(Boolean)\n    .length \n}}\n",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -128,
+        0
+      ],
+      "id": "d960d456-4f84-40f6-a256-cd5de2bd3b0d",
+      "name": "wordCount"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "49cb7841-ac6a-450a-bfd7-cbc235462d6e",
+              "leftValue": "={{ $json.wordCount }}",
+              "rightValue": 6,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "8c4ee66c-2537-435e-a6b5-928489bd34d7",
+              "leftValue": "={{ $json.query }}",
+              "rightValue": "نی نی سایت",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        16,
+        0
+      ],
+      "id": "3bf2c96a-5825-458b-9536-3b0de1eed652",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "wordCount",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        176,
+        0
+      ],
+      "id": "9b351c63-faee-4381-a215-9e6337b6d564",
+      "name": "Sort"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1EQpJRYG2PyvzR87hw7RWXSaxz94BAPurQ5Or-sYnTWM",
+          "mode": "list",
+          "cachedResultName": "new impression",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1EQpJRYG2PyvzR87hw7RWXSaxz94BAPurQ5Or-sYnTWM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1002804618,
+          "mode": "list",
+          "cachedResultName": "long tail",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1EQpJRYG2PyvzR87hw7RWXSaxz94BAPurQ5Or-sYnTWM/edit#gid=1002804618"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ $json.query }}",
+            "wordCount": "={{ $json.wordCount }}",
+            "imppersion": "={{ $json.impressions }}",
+            "click": "={{ $json.clicks }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "wordCount",
+              "displayName": "wordCount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "imppersion",
+              "displayName": "imppersion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "click",
+              "displayName": "click",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ctr",
+              "displayName": "ctr",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        352,
+        0
+      ],
+      "id": "c42bab15-fe71-4ff4-87e4-7b9ee571f64f",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "QvHG7YaK0xrWGior",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Query search analytics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query search analytics": {
+      "main": [
+        [
+          {
+            "node": "wordCount",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "wordCount": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Sort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c019c7fa-efad-4b65-a1f5-60c5ba84173b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "90508cb8f2d83999afaa216d5287cc3a6638d0fa1d4e1e64e87818d08c9f8efe"
+  },
+  "id": "GdwfTncRB5YCGzZx",
+  "tags": []
+}
